@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: prepmate-db
+    environment:
+      POSTGRES_USER: prepmate
+      POSTGRES_PASSWORD: prepmate
+      POSTGRES_DB: prepmate_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - prepmate_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  prepmate_pgdata:

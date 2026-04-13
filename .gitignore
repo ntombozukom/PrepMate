@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+
+# Secrets — never commit these
+src/PrepMate.API/appsettings.Development.json
+
+# Frontend
+client/node_modules/
+client/dist/
+client/.env
+client/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
