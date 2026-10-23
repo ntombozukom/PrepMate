@@ -2,112 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Sparkles, LogOut, User, Wrench, BookOpen, ArrowLeft,
-  CheckCircle2, AlertCircle, PanelLeftClose, PanelLeftOpen,
-  KeyRound, Trash2, FileText, Save,
+  User, ArrowLeft, CheckCircle2, AlertCircle, KeyRound, Trash2, FileText, Save,
 } from 'lucide-react';
 import { cvApi, profileApi, getApiErrorMessage } from '../services/api';
 import { Spinner } from '../components/ui/Spinner';
+import { PasswordInput } from '../components/ui/PasswordInput';
 import { useAuth } from '../contexts/AuthContext';
-
-// ─── Sidebar shared components ────────────────────────────────────────────────
-function NavItem({ collapsed, icon, label, active, href }: {
-  collapsed: boolean; icon: React.ReactNode; label: string;
-  active?: boolean; href: string;
-}) {
-  return (
-    <Link
-      to={href}
-      title={collapsed ? label : undefined}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-        collapsed ? 'justify-center' : ''
-      } ${
-        active
-          ? 'bg-indigo-50 text-indigo-700'
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-      }`}
-    >
-      {icon}
-      {!collapsed && <span>{label}</span>}
-    </Link>
-  );
-}
-
-function Sidebar({
-  collapsed, onToggle, user, onSignOut,
-}: {
-  collapsed: boolean;
-  onToggle: () => void;
-  user: { firstName?: string; lastName?: string; email?: string } | null;
-  onSignOut: () => void;
-}) {
-  const initial = user?.firstName?.[0]?.toUpperCase() ?? '?';
-
-  return (
-    <aside className={`hidden lg:flex flex-col bg-white border-r border-slate-200 sticky top-0 h-screen transition-all duration-300 ${collapsed ? 'w-16' : 'w-60'}`}>
-      <div className={`flex items-center border-b border-slate-100 h-16 ${collapsed ? 'justify-center px-3' : 'justify-between px-5'}`}>
-        {!collapsed && (
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 shrink-0">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-bold text-gray-900 tracking-tight text-lg">PrepMate</span>
-          </div>
-        )}
-        {collapsed && (
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-            <Sparkles className="h-4 w-4 text-white" />
-          </div>
-        )}
-        <button
-          onClick={onToggle}
-          className={`flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors ${collapsed ? 'hidden' : ''}`}
-          title="Collapse sidebar"
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
-      </div>
-
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-hidden">
-        {!collapsed && <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Menu</p>}
-        <NavItem collapsed={collapsed} icon={<Sparkles className="h-4 w-4 shrink-0" />} label="Dashboard" href="/dashboard" />
-        <NavItem collapsed={collapsed} icon={<Wrench className="h-4 w-4 shrink-0" />} label="CV Tools" href="/cv-tools" />
-        <NavItem collapsed={collapsed} icon={<BookOpen className="h-4 w-4 shrink-0" />} label="Sessions" href="/dashboard" />
-      </nav>
-
-      <div className="border-t border-slate-100 px-2 py-3 space-y-1">
-        <Link to="/profile" className={`flex items-center rounded-lg px-3 py-2.5 bg-indigo-50 text-indigo-700 gap-3 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="h-7 w-7 flex items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-xs shrink-0">
-            {initial}
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-indigo-900 truncate">{user?.firstName} {user?.lastName}</p>
-              <p className="text-[11px] text-indigo-500 truncate">{user?.email}</p>
-            </div>
-          )}
-        </Link>
-        <button
-          onClick={onSignOut}
-          className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors ${collapsed ? 'justify-center' : ''}`}
-          title="Sign out"
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && <span>Sign out</span>}
-        </button>
-        {collapsed && (
-          <button
-            onClick={onToggle}
-            className="w-full flex items-center justify-center rounded-lg px-3 py-2 text-slate-400 hover:bg-slate-100 transition-colors"
-            title="Expand sidebar"
-          >
-            <PanelLeftOpen className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-    </aside>
-  );
-}
+import { AppMobileBar, AppSidebar } from '../components/AppNav';
 
 // ─── Section card wrapper ─────────────────────────────────────────────────────
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
@@ -142,7 +43,6 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // ── Profile form state ────────────────────────────────────────────────────
   const [firstName, setFirstName] = useState(authUser?.firstName ?? '');
@@ -204,8 +104,6 @@ export default function ProfilePage() {
     },
   });
 
-  const handleSignOut = () => { logout(); navigate('/'); };
-
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName.trim() || !lastName.trim()) {
@@ -238,27 +136,8 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((v) => !v)}
-        user={authUser}
-        onSignOut={handleSignOut}
-      />
-
-      {/* Mobile top bar */}
-      <div className="lg:hidden fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600">
-            <Sparkles className="h-3.5 w-3.5 text-white" />
-          </div>
-          <span className="font-bold text-slate-900 text-base">PrepMate</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link to="/dashboard" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900">
-            <ArrowLeft className="h-4 w-4" /> Dashboard
-          </Link>
-        </div>
-      </div>
+      <AppSidebar />
+      <AppMobileBar />
 
       {/* Main */}
       <main className="flex-1 pt-14 lg:pt-0">
@@ -382,8 +261,7 @@ export default function ProfilePage() {
           <Section title="Change Password" icon={<KeyRound className="h-4 w-4" />}>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <Field label="Current Password">
-                <input
-                  type="password"
+                <PasswordInput
                   className={inputCls}
                   value={currentPwd}
                   onChange={(e) => setCurrentPwd(e.target.value)}
@@ -394,8 +272,7 @@ export default function ProfilePage() {
               </Field>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="New Password">
-                  <input
-                    type="password"
+                  <PasswordInput
                     className={inputCls}
                     value={newPwd}
                     onChange={(e) => setNewPwd(e.target.value)}
@@ -405,8 +282,7 @@ export default function ProfilePage() {
                   />
                 </Field>
                 <Field label="Confirm New Password">
-                  <input
-                    type="password"
+                  <PasswordInput
                     className={inputCls}
                     value={confirmPwd}
                     onChange={(e) => setConfirmPwd(e.target.value)}

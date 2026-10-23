@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  LogOut, FileText, Upload, ChevronDown, ChevronUp,
-  Briefcase, Calendar, CheckCircle2, AlertCircle,
-  Plus, BookOpen, X, ArrowRight, ChevronRight, ArrowLeft,
-  BarChart2, Wrench, AlertTriangle, TrendingUp, ShieldAlert,
-  PanelLeftClose, PanelLeftOpen, User, LayoutDashboard,
+  FileText, Upload, ChevronDown, ChevronUp, Briefcase, Calendar, CheckCircle2, AlertCircle, Plus, BookOpen, X, ArrowRight, ChevronRight, ArrowLeft, BarChart2, AlertTriangle, TrendingUp, ShieldAlert, Bell,
 } from 'lucide-react';
-import { cvApi, cvToolsApi, jdApi, prepSessionApi, getApiErrorMessage } from '../services/api';
+import { cvApi, cvToolsApi, jdApi, prepSessionApi, waitlistApi, getApiErrorMessage } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { AppMobileBar, AppSidebar } from '../components/AppNav';
+import { useFeatures } from '../hooks/useFeatures';
 import {
   Industry, IndustryLabels, DifficultyColors,
   type PrepSessionDetailDto, type CvMatchResultDto,
@@ -383,130 +381,60 @@ function Stepper({ step, cvReady, jdReady }: { step: number; cvReady: boolean; j
   );
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({
-  collapsed, onToggle, sessions, user, onSignOut,
-}: {
-  collapsed: boolean;
-  onToggle: () => void;
-  sessions: { length: number };
-  user: { firstName?: string; lastName?: string; email?: string } | null;
-  onSignOut: () => void;
-}) {
-  const initial = user?.firstName?.[0]?.toUpperCase() ?? '?';
+// ─── Interview prep: coming soon ──────────────────────────────────────────────
+function JobPrepComingSoon() {
+  const queryClient = useQueryClient();
+  const { data: status } = useQuery({ queryKey: ['waitlist', 'job-prep'], queryFn: waitlistApi.getJobPrep });
+  const { mutate: join, isPending } = useMutation({
+    mutationFn: waitlistApi.joinJobPrep,
+    onSuccess: (s) => queryClient.setQueryData(['waitlist', 'job-prep'], s),
+  });
+  const joined = status?.joined ?? false;
 
   return (
-    <aside className={`hidden lg:flex flex-col bg-white border-r border-slate-200 sticky top-0 h-screen transition-all duration-300 ${collapsed ? 'w-16' : 'w-60'}`}>
-      {/* Logo + collapse toggle */}
-      <div className={`flex items-center border-b border-slate-100 h-16 ${collapsed ? 'justify-center px-3' : 'justify-between px-5'}`}>
-        {!collapsed && (
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 shrink-0">
-              <Briefcase className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-bold text-gray-900 tracking-tight text-lg">PrepMate</span>
+    <section className="mt-8 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6">
+      <div className="flex items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white border border-indigo-100">
+          <BookOpen className="h-5 w-5 text-indigo-700" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-semibold text-slate-900">Interview prep</h2>
+            <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">Coming soon</span>
           </div>
-        )}
-        {collapsed && (
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-            <Briefcase className="h-4 w-4 text-white" />
-          </div>
-        )}
-        <button
-          onClick={onToggle}
-          className={`flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors ${collapsed ? 'hidden' : ''}`}
-          title="Collapse sidebar"
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-hidden">
-        {!collapsed && <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Menu</p>}
-
-        <NavItem collapsed={collapsed} icon={<LayoutDashboard className="h-4 w-4 shrink-0" />} label="Dashboard" active href="/dashboard" />
-        <NavItem collapsed={collapsed} icon={<Wrench className="h-4 w-4 shrink-0" />} label="CV Tools" href="/cv-tools" />
-        <NavItem
-          collapsed={collapsed}
-          icon={<BookOpen className="h-4 w-4 shrink-0" />}
-          label="Sessions"
-          href="/dashboard"
-          badge={sessions.length > 0 ? sessions.length : undefined}
-        />
-      </nav>
-
-      {/* User */}
-      <div className="border-t border-slate-100 px-2 py-3 space-y-1">
-        <Link to="/profile" className={`flex items-center rounded-lg px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors gap-3 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="h-7 w-7 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs shrink-0">
-            {initial}
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-slate-900 truncate">{user?.firstName} {user?.lastName}</p>
-              <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
-            </div>
-          )}
-        </Link>
-        <button
-          onClick={onSignOut}
-          className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors ${collapsed ? 'justify-center' : ''}`}
-          title="Sign out"
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && <span>Sign out</span>}
-        </button>
-
-        {/* Expand toggle (shown only when collapsed) */}
-        {collapsed && (
+          <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
+            Upload a job description and see where your CV is strong and where the gaps are. Then get a study
+            guide for the role, from the fundamentals to advanced topics, matched to the level the job expects.
+          </p>
           <button
-            onClick={onToggle}
-            className="w-full flex items-center justify-center rounded-lg px-3 py-2 text-slate-400 hover:bg-slate-100 transition-colors"
-            title="Expand sidebar"
+            onClick={() => join()}
+            disabled={joined || isPending}
+            className={`mt-4 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+              joined
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+                : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'
+            }`}
           >
-            <PanelLeftOpen className="h-4 w-4" />
+            {joined
+              ? <><CheckCircle2 className="h-4 w-4" />We'll let you know when it's ready</>
+              : <>{isPending ? <Spinner size="sm" /> : <Bell className="h-4 w-4" />}Notify me</>}
           </button>
-        )}
+        </div>
       </div>
-    </aside>
-  );
-}
-
-function NavItem({ collapsed, icon, label, active, href, badge }: {
-  collapsed: boolean; icon: React.ReactNode; label: string;
-  active?: boolean; href: string; badge?: number;
-}) {
-  return (
-    <Link
-      to={href}
-      title={collapsed ? label : undefined}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-        active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-      } ${collapsed ? 'justify-center' : ''}`}
-    >
-      {icon}
-      {!collapsed && <span className="flex-1 truncate">{label}</span>}
-      {!collapsed && badge !== undefined && (
-        <span className="inline-flex items-center justify-center h-5 min-w-[20px] rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold px-1.5">
-          {badge}
-        </span>
-      )}
-    </Link>
+    </section>
   );
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { jobPrep } = useFeatures();
 
   const cvInputRef = useRef<HTMLInputElement>(null);
   const jdInputRef = useRef<HTMLInputElement>(null);
   const sessionRef = useRef<HTMLDivElement>(null);
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [step, setStep] = useState(1);
   const [cvDragOver, setCvDragOver] = useState(false);
   const [jdDragOver, setJdDragOver] = useState(false);
@@ -534,6 +462,7 @@ export default function DashboardPage() {
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
     queryKey: ['prep-sessions'],
     queryFn: prepSessionApi.getAll,
+    enabled: jobPrep,
   });
 
   const { mutate: uploadCv, isPending: cvUploading, error: cvError } = useMutation({
@@ -582,7 +511,8 @@ export default function DashboardPage() {
   }, [step, activeCv, jdText, jobTitle, matchResult, matchLoading]);
 
   const handleCvFile = (file: File) => {
-    if (!file.name.endsWith('.pdf') && !file.name.endsWith('.docx') && !file.name.endsWith('.txt')) return;
+    const name = file.name.toLowerCase();
+    if (!name.endsWith('.pdf') && !name.endsWith('.docx')) return;
     uploadCv(file);
   };
 
@@ -616,35 +546,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
 
-      {/* ── Sidebar ── */}
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((v) => !v)}
-        sessions={sessions}
-        user={user}
-        onSignOut={() => { logout(); navigate('/'); }}
-      />
-
-      {/* ── Mobile top bar ── */}
-      <div className="lg:hidden fixed top-0 inset-x-0 z-40 bg-white border-b border-slate-200 flex items-center justify-between px-4 h-14">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600">
-            <Briefcase className="h-3.5 w-3.5 text-white" />
-          </div>
-          <span className="font-bold text-gray-900">PrepMate</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Link to="/cv-tools" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
-            <Wrench className="h-3.5 w-3.5" /><span className="hidden sm:inline">CV Tools</span>
-          </Link>
-          <Link to="/profile" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
-            <User className="h-3.5 w-3.5" />
-          </Link>
-          <button onClick={() => { logout(); navigate('/'); }} className="flex items-center rounded-lg p-2 text-slate-400 hover:bg-slate-100 transition-colors">
-            <LogOut className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      <AppSidebar sessionCount={sessions.length} />
+      <AppMobileBar />
 
       {/* ── Main content ── */}
       <main className="flex-1 min-w-0 pt-14 lg:pt-0">
@@ -656,7 +559,9 @@ export default function DashboardPage() {
               {greeting()}, <span className="text-indigo-600">{user?.firstName}</span>
             </h1>
             <p className="mt-1 text-slate-500">
-              {sessions.length === 0
+              {!jobPrep
+                ? "Let's get your CV ready for applicant tracking systems (ATS)."
+                : sessions.length === 0
                 ? "Let's get you ready for your next interview."
                 : `${sessions.length} session${sessions.length !== 1 ? 's' : ''} completed. Keep sharpening.`}
             </p>
@@ -665,7 +570,7 @@ export default function DashboardPage() {
           {/* ── Stepper + steps ── */}
           {!activeSession && (
             <div className="animate-fade-in-up animation-delay-100">
-              <Stepper step={step} cvReady={cvReady} jdReady={jdReady} />
+              {jobPrep && <Stepper step={step} cvReady={cvReady} jdReady={jdReady} />}
 
               {/* Step 1: CV */}
               {step === 1 && (
@@ -719,7 +624,7 @@ export default function DashboardPage() {
                             </div>
                             <div>
                               <p className="font-medium text-slate-700">Drop your CV here or click to browse</p>
-                              <p className="text-sm text-slate-400 mt-1">PDF, DOCX or TXT — uploaded once, reused everywhere</p>
+                              <p className="text-sm text-slate-400 mt-1">PDF or Word (.docx), uploaded once and reused everywhere</p>
                             </div>
                           </div>
                         )}
@@ -733,15 +638,20 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  <input ref={cvInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden"
+                  <input ref={cvInputRef} type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden"
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCvFile(f); e.target.value = ''; }} />
 
-                  {cvReady && (
+                  {cvReady && (jobPrep ? (
                     <button onClick={() => setStep(2)}
                       className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-indigo-600 px-6 py-4 text-sm font-semibold text-white hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm shadow-indigo-200">
                       Next: Add Job Description <ArrowRight className="h-4 w-4" />
                     </button>
-                  )}
+                  ) : (
+                    <Link to="/cv-tools"
+                      className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-indigo-600 px-6 py-4 text-sm font-semibold text-white hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm shadow-indigo-200">
+                      Check my CV for ATS <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ))}
                 </div>
               )}
 
@@ -984,8 +894,10 @@ export default function DashboardPage() {
             </section>
           )}
 
+          {!jobPrep && <JobPrepComingSoon />}
+
           {/* Empty state */}
-          {!activeSession && sessions.length === 0 && cvReady && !cvLoading && step === 1 && (
+          {jobPrep && !activeSession && sessions.length === 0 && cvReady && !cvLoading && step === 1 && (
             <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white p-14 text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50">
                 <BookOpen className="h-7 w-7 text-indigo-400" />

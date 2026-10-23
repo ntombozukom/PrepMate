@@ -13,7 +13,7 @@ namespace PrepMate.API.Controllers;
 [Authorize]
 public sealed class CvController(IMediator mediator) : ControllerBase
 {
-    /// <summary>Upload or replace the current user's CV (PDF only, max 5 MB).</summary>
+    /// <summary>Upload or replace the current user's CV (PDF or Word .docx, max 5 MB).</summary>
     [HttpPost("upload")]
     [ProducesResponseType(typeof(CvDocumentDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

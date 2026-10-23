@@ -675,7 +675,11 @@ public sealed class GroqService(
 
     public async Task<AtsOptimizationResult> OptimizeCvAtsAsync(string cvText, CancellationToken ct = default)
     {
-        var cvSnippet = cvText[..Math.Min(cvText.Length, 5000)];
+        // Send the whole CV up to a generous limit; flag longer ones so the user is warned
+        // instead of silently getting a rewrite that is missing its later pages.
+        const int maxCvChars = 20_000;
+        var cvWasTruncated = cvText.Length > maxCvChars;
+        var cvSnippet = cvWasTruncated ? cvText[..maxCvChars] : cvText;
 
         const string systemPrompt =
             "You are an ATS (Applicant Tracking System) optimisation expert. " +
@@ -704,7 +708,7 @@ public sealed class GroqService(
             """;
 
         var responseText = await CallGroqAsync(systemPrompt, userPrompt, ct);
-        return ParseAtsResult(responseText);
+        return ParseAtsResult(responseText) with { CvWasTruncated = cvWasTruncated };
     }
 
     private AtsOptimizationResult ParseAtsResult(string responseText)

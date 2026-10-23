@@ -9,6 +9,9 @@ public sealed class User : BaseEntity
     public string FirstName { get; private set; } = default!;
     public string LastName { get; private set; } = default!;
 
+    /// <summary>When the user asked to be told about interview prep (null = not on the waitlist).</summary>
+    public DateTime? JobPrepWaitlistJoinedAt { get; private set; }
+
     // Navigation
     public IReadOnlyCollection<CvDocument> CvDocuments => _cvDocuments.AsReadOnly();
     public IReadOnlyCollection<PrepSession> PrepSessions => _prepSessions.AsReadOnly();
@@ -38,6 +41,13 @@ public sealed class User : BaseEntity
     {
         FirstName = firstName.Trim();
         LastName = lastName.Trim();
+        SetUpdated();
+    }
+
+    public void JoinJobPrepWaitlist()
+    {
+        if (JobPrepWaitlistJoinedAt is not null) return; // keep the original sign-up time
+        JobPrepWaitlistJoinedAt = DateTime.UtcNow;
         SetUpdated();
     }
 

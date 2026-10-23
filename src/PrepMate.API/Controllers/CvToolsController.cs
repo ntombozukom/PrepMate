@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PrepMate.API.Filters;
 using PrepMate.API.Extensions;
 using PrepMate.Application.DTOs;
 using PrepMate.Application.Features.CvTools.Commands.AnalyzeCvMatch;
@@ -16,6 +17,7 @@ public sealed class CvToolsController(IMediator mediator) : ControllerBase
 {
     /// <summary>Analyse how well the candidate's CV matches a job description.</summary>
     [HttpPost("match-analysis")]
+    [RequiresJobPrep]
     [ProducesResponseType(typeof(CvMatchResultDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> AnalyzeMatch(
         [FromBody] MatchAnalysisRequest body,

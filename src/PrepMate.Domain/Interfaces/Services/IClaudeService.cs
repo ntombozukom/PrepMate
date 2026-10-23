@@ -53,7 +53,8 @@ public record AtsOptimizationResult(
     List<string> Improvements,
     string RewrittenSummary,
     List<string> KeywordsToAdd,
-    string RewrittenCv = "");
+    string RewrittenCv = "",
+    bool CvWasTruncated = false);
 
 // ── Interface ──────────────────────────────────────────────────────────────────
 

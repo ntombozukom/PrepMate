@@ -29,6 +29,7 @@ public sealed class OptimizeCvAtsCommandHandler(
             result.Improvements,
             result.RewrittenSummary,
             result.KeywordsToAdd,
-            result.RewrittenCv);
+            result.RewrittenCv,
+            result.CvWasTruncated);
     }
 }

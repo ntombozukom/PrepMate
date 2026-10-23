@@ -1,0 +1,23 @@
+// Cloudflare Worker: serves the built site and the no-account CV check API from one domain.
+// Deploy: npm run deploy. Secrets (set once): npx wrangler secret put GROQ_API_KEY, and TURNSTILE_SECRET_KEY
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "prepmate",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "RATE_LIMITER", "class_name": "RateLimiter" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RateLimiter"] }],
+  "vars": {
+    "GROQ_MODEL": "openai/gpt-oss-120b",
+    "GROQ_SCORE_MODEL": "openai/gpt-oss-120b",
+    "AI_REQUESTS_PER_HOUR": "10"
+  },
+  "observability": { "enabled": true }
+}

@@ -20,4 +20,5 @@ public record AtsOptimizationDto(
     List<string> Improvements,
     string RewrittenSummary,
     List<string> KeywordsToAdd,
-    string RewrittenCv);
+    string RewrittenCv,
+    bool CvWasTruncated);
