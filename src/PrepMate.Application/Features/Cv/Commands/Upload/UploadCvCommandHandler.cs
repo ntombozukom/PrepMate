@@ -2,23 +2,22 @@ using MediatR;
 using PrepMate.Application.DTOs;
 using PrepMate.Domain.Entities;
 using PrepMate.Domain.Interfaces.Repositories;
-using PrepMate.Domain.Interfaces.Services;
 
 namespace PrepMate.Application.Features.Cv.Commands.Upload;
 
 public sealed class UploadCvCommandHandler(
     ICvDocumentRepository cvRepository,
-    IPdfExtractorService pdfExtractor)
+    CvTextReader cvTextReader)
     : IRequestHandler<UploadCvCommand, CvDocumentDto>
 {
     public async Task<CvDocumentDto> Handle(UploadCvCommand request, CancellationToken cancellationToken)
     {
+        // Read first, so an unreadable file never replaces the user's current CV.
+        var extractedText = cvTextReader.Read(request.FileName, request.FileContent);
+
         // Deactivate any existing CV for this user
         var existing = await cvRepository.GetActiveByUserIdAsync(request.UserId, cancellationToken);
         existing?.Deactivate();
-
-        // Extract text from the uploaded PDF
-        var extractedText = pdfExtractor.ExtractText(request.FileContent);
 
         var document = CvDocument.Create(
             request.UserId,

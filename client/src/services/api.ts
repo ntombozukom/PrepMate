@@ -11,6 +11,10 @@ import type {
   CvMatchResultDto,
   CoverLetterDto,
   AtsOptimizationDto,
+  AtsScoreDto,
+  AtsRewriteDto,
+  FeaturesDto,
+  WaitlistStatusDto,
 } from '../types/api';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
@@ -120,6 +124,33 @@ export const cvToolsApi = {
 
   optimizeAts: (cvDocumentId: string) =>
     apiClient.post<AtsOptimizationDto>('/cvtools/ats-optimize', { cvDocumentId }).then((r) => r.data),
+};
+
+// ─── No-account CV check (only the CV's text is sent; nothing is stored) ──────────
+// Served by the Cloudflare Worker (worker/index.ts). The score runs the bot check and returns a pass
+// that the rewrite and cover letter send back.
+type CoverLetterInput = { jobDescriptionText?: string; jobTitle?: string; companyName?: string };
+
+export const atsApi = {
+  score: (cvText: string, turnstileToken: string) =>
+    apiClient.post<AtsScoreDto>('/ats/score', { cvText, turnstileToken }).then((r) => r.data),
+
+  rewrite: (cvText: string, pass: string) =>
+    apiClient.post<AtsRewriteDto>('/ats/rewrite', { cvText }, { headers: { 'X-Check-Pass': pass } }).then((r) => r.data),
+
+  coverLetter: (cvText: string, pass: string, data: CoverLetterInput) =>
+    apiClient.post<CoverLetterDto>('/ats/cover-letter', { cvText, ...data }, { headers: { 'X-Check-Pass': pass } })
+      .then((r) => r.data),
+};
+
+// ─── Features & waitlist ─────────────────────────────────────────────────────────
+export const featuresApi = {
+  get: () => apiClient.get<FeaturesDto>('/features').then((r) => r.data),
+};
+
+export const waitlistApi = {
+  getJobPrep: () => apiClient.get<WaitlistStatusDto>('/waitlist/job-prep').then((r) => r.data),
+  joinJobPrep: () => apiClient.post<WaitlistStatusDto>('/waitlist/job-prep').then((r) => r.data),
 };
 
 // Helper to extract readable error message

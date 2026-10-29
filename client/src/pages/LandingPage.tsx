@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Brain, FileText, Target, Sparkles, ChevronRight, Zap, Users, Trophy, ArrowRight, Check, X } from 'lucide-react';
+import { Brain, FileText, Target, ChevronRight, Zap, Users, Trophy, ArrowRight, Check, X, Download, Gauge, Briefcase } from 'lucide-react';
+import { useFeatures } from '../hooks/useFeatures';
+import { RotatingWord } from '../components/RotatingWord';
+import AtsLanding from './AtsLanding';
 
 // ─── Marquee ──────────────────────────────────────────────────────────────────
 
@@ -74,6 +77,27 @@ const steps = [
   { num: '3', label: 'Upload your CV once' },
 ];
 
+// ─── ATS-first content (interview prep switched off) ─────────────────────────
+
+const atsFeatures = [
+  { icon: Gauge,    title: 'ATS Compatibility Score', desc: 'See how well applicant tracking systems can read your CV, with a score out of 100 and what is working already.', color: 'bg-indigo-100 text-indigo-600', delay: 'animation-delay-100' },
+  { icon: Zap,      title: 'Rewritten for ATS',       desc: 'Standard headings, no tables or columns, stronger keywords and action verbs, based on your real experience. Always review it before you use it.', color: 'bg-amber-100 text-amber-600', delay: 'animation-delay-200' },
+  { icon: Download, title: 'ATS-friendly Word Download',     desc: 'Review and edit the rewrite, then download a simple single-column Word document.', color: 'bg-emerald-100 text-emerald-600', delay: 'animation-delay-300' },
+  { icon: FileText, title: 'Tailored Cover Letters',  desc: 'Paste a job description and get a cover letter built from your CV, in the tone that suits the role.', color: 'bg-violet-100 text-violet-600', delay: 'animation-delay-400' },
+];
+
+const atsStats = [
+  { icon: Gauge,    value: 'ATS score',      label: 'out of 100, explained' },
+  { icon: Download, value: 'Word download',  label: 'single column, ATS-safe' },
+  { icon: FileText, value: 'Cover letters',  label: 'tailored to the job' },
+];
+
+const atsSteps = [
+  { num: '1', label: 'Upload your CV' },
+  { num: '2', label: 'See your ATS check' },
+  { num: '3', label: 'Download an ATS-friendly version' },
+];
+
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 
 type PricingRow = { label: string; free: boolean | string; prep: boolean | string; pro: boolean | string };
@@ -99,15 +123,21 @@ function PricingCell({ value }: { value: boolean | string }) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  const { jobPrep } = useFeatures();
+  const heroSteps = jobPrep ? steps : atsSteps;
+
+  // ATS-first launch has its own page; this one is the interview-prep landing.
+  if (!jobPrep) return <AtsLanding />;
+
   return (
-    <div className="min-h-screen bg-white overflow-hidden">
+    <div className="min-h-screen bg-[#f7f5f0] overflow-hidden">
 
       {/* Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100 animate-fade-in-up">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-[#f7f5f0]/90 backdrop-blur border-b border-gray-100 animate-fade-in-up">
         <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 shadow-sm shadow-indigo-300">
-              <Sparkles className="h-4 w-4 text-white" />
+              <Briefcase className="h-4 w-4 text-white" />
             </div>
             <span className="font-bold text-gray-900 text-lg">PrepMate</span>
           </div>
@@ -135,27 +165,32 @@ export default function LandingPage() {
 
         <div className="relative mx-auto max-w-4xl text-center">
           <div className="animate-fade-in-up animate-float mb-6 inline-flex items-center gap-2 rounded-full bg-indigo-50 border border-indigo-200 px-4 py-1.5 text-sm font-medium text-indigo-700">
-            <Sparkles className="h-3.5 w-3.5" />
-            AI-powered interview preparation
+            <span className="rounded-full bg-indigo-600 px-1.5 py-px text-[10px] font-bold text-white">AI</span>
+            {jobPrep ? 'Interview preparation' : 'CV check for applicant tracking systems'}
           </div>
 
-          <h1 className="animate-fade-in-up animation-delay-100 text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl leading-tight">
-            Walk into every interview
-            <span className="block text-indigo-600 mt-1">ready to shine.</span>
+          <h1 className="animate-fade-in-up animation-delay-100 text-5xl font-semibold tracking-tight text-gray-900 sm:text-6xl leading-tight">
+            {jobPrep ? 'Walk into every interview' : 'Make your CV easy to read'}
+            <span className="block text-indigo-600 mt-1">
+              {jobPrep ? 'ready to shine.' : (
+                <><span className="font-semibold text-slate-900">for</span> <RotatingWord words={['ATS software.', 'recruiters.', 'hiring managers.']} /></>
+              )}
+            </span>
           </h1>
 
           <div className="animate-fade-in-up animation-delay-200 mt-8 space-y-5">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-              {steps.map((s, i) => (
-                <span key={s.num} className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 font-semibold text-white text-xs">
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-400 text-gray-900 text-[10px] font-bold">{s.num}</span>
-                    {s.label}
-                  </span>
-                  {i < steps.length - 1 && <ArrowRight className="h-3.5 w-3.5 text-gray-400" />}
-                </span>
-              ))}
-            </div>
+            <p className="text-sm font-medium text-gray-500">
+              {heroSteps.map((s) => s.label).join('  ·  ')}
+            </p>
+            {!jobPrep && (
+              <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                Many employers screen applications with applicant tracking systems. PrepMate checks how readable
+                your CV is for them, suggests fixes and gives you a{' '}
+                <span className="font-semibold text-gray-800">ATS-friendly Word version</span> to review, using only{' '}
+                <span className="font-semibold text-indigo-600">your actual experience</span>.
+              </p>
+            )}
+            {jobPrep && (
             <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
               PrepMate decodes every technical buzzword into{' '}
               <span className="font-semibold text-gray-800">plain English</span> — crafting answers built around{' '}
@@ -165,15 +200,16 @@ export default function LandingPage() {
               </span>
               , not a textbook.
             </p>
+            )}
           </div>
 
           <div className="animate-fade-in-up animation-delay-300 mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/register"
-              className="group inline-flex items-center gap-2 rounded-full bg-indigo-600 px-8 py-4 text-base font-semibold text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-1"
+              className="group inline-flex items-center gap-2 rounded-full bg-indigo-600 px-8 py-4 text-base font-semibold text-white hover:bg-indigo-700 transition-all hover:-translate-y-0.5"
             >
-              <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform" />
-              Start preparing
+              {jobPrep ? 'Start preparing' : 'Check my CV'}
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
               to="/login"
@@ -186,6 +222,7 @@ export default function LandingPage() {
       </section>
 
       {/* Marquee */}
+      {jobPrep && (
       <section className="py-12 px-0 overflow-hidden">
         <div className="mx-auto max-w-6xl px-6 mb-6 text-center animate-fade-in-up animation-delay-400">
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -199,16 +236,14 @@ export default function LandingPage() {
           <MarqueeRow chips={row2} reverse speed={42} />
         </div>
       </section>
+      )}
 
       {/* Stats bar */}
       <section className="border-y border-gray-100 bg-gray-50 py-10 px-6">
         <div className="mx-auto max-w-4xl grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-          {stats.map((s, i) => (
+          {(jobPrep ? stats : atsStats).map((s, i) => (
             <div key={s.value} className={`animate-scale-in animation-delay-${(i + 1) * 100} flex flex-col items-center gap-1 group`}>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 mb-2 group-hover:bg-indigo-600 transition-colors duration-300">
-                <s.icon className="h-5 w-5 text-indigo-500 group-hover:text-white transition-colors duration-300" />
-              </div>
-              <p className="text-xl font-bold text-gray-900">{s.value}</p>
+              <p className="font-display text-xl font-semibold text-gray-900">{s.value}</p>
               <p className="text-sm text-gray-500">{s.label}</p>
             </div>
           ))}
@@ -219,24 +254,38 @@ export default function LandingPage() {
       <section className="py-24 px-6">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-16 animate-fade-in-up">
-            <h2 className="text-3xl font-bold text-gray-900">Your personal interview coach</h2>
-            <p className="mt-3 text-gray-500 text-lg">Everything you need to walk in confident.</p>
+            <h2 className="text-3xl font-bold text-gray-900">{jobPrep ? 'Your personal interview coach' : 'What PrepMate does'}</h2>
+            <p className="mt-3 text-gray-500 text-lg">{jobPrep ? 'Everything you need to walk in confident.' : 'A clearer CV, in your own words.'}</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-6">
-            {features.map((f) => (
-              <div key={f.title} className={`animate-fade-in-up ${f.delay} group rounded-2xl border border-gray-100 bg-white p-6 hover:shadow-xl hover:shadow-gray-100 hover:-translate-y-1 transition-all duration-300 cursor-default`}>
-                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${f.color} mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <f.icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2 text-base">{f.title}</h3>
+            {(jobPrep ? features : atsFeatures).map((f, i) => (
+              <div key={f.title} className={`animate-fade-in-up ${f.delay} rounded-2xl border border-gray-200 bg-white p-6`}>
+                <p className="mb-3 text-xs font-semibold tracking-widest text-indigo-600">{String(i + 1).padStart(2, '0')}</p>
+                <h3 className="font-semibold text-gray-900 mb-2 text-lg">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
+
+          {!jobPrep && (
+            <div className="mt-6 rounded-2xl border border-dashed border-gray-300 bg-white/60 p-6">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold text-gray-900 text-base">Interview prep</h3>
+                  <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">Coming soon</span>
+                </div>
+                <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+                  Upload a job description and see where your CV is a strong match and where the gaps are. Then get a
+                  study guide for the role, from the fundamentals to advanced topics, matched to the level the job expects.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       {/* Pricing */}
+      {jobPrep && (
       <section className="py-24 px-6 bg-gray-50 border-y border-gray-100">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-4 animate-fade-in-up">
@@ -300,10 +349,11 @@ export default function LandingPage() {
           </p>
         </div>
       </section>
+      )}
 
       {/* CTA */}
       <section className="relative py-24 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700" />
+        <div className="absolute inset-0 bg-[#13233a]" />
         <div className="pointer-events-none absolute inset-0">
           <div className="animate-blob absolute -top-16 -right-16 h-64 w-64 rounded-full bg-violet-400 opacity-30 blur-2xl" />
           <div className="animate-blob animation-delay-2000 absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-indigo-400 opacity-30 blur-2xl" />
@@ -311,20 +361,18 @@ export default function LandingPage() {
 
         <div className="relative mx-auto max-w-2xl text-center">
           <div className="animate-fade-in-up mb-4 inline-flex items-center gap-2 rounded-full bg-white/20 border border-white/30 px-4 py-1.5 text-sm font-medium text-white">
-            <Sparkles className="h-3.5 w-3.5" />
-            Your next interview is closer than you think
+            {jobPrep ? 'Your next interview is closer than you think' : 'Free to try'}
           </div>
           <h2 className="animate-fade-in-up animation-delay-100 text-3xl font-bold text-white">
-            Ready to ace your next interview?
+            {jobPrep ? 'Ready to ace your next interview?' : 'See how your CV reads to an ATS'}
           </h2>
           <p className="animate-fade-in-up animation-delay-200 mt-3 text-indigo-200 text-lg">
-            Join PrepMate and walk in knowing your stuff.
+            {jobPrep ? 'Join PrepMate and walk in knowing your stuff.' : 'Upload your CV and get your check in a few minutes.'}
           </p>
           <Link
             to="/register"
-            className="animate-fade-in-up animation-delay-300 mt-8 group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-indigo-700 hover:bg-indigo-50 transition-all shadow-2xl hover:-translate-y-1 hover:shadow-white/30"
+            className="animate-fade-in-up animation-delay-300 mt-8 group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-indigo-700 hover:bg-indigo-50 transition-all hover:-translate-y-0.5"
           >
-            <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform" />
             Get started
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>

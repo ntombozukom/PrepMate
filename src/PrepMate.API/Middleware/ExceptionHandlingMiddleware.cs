@@ -59,6 +59,12 @@ public sealed class ExceptionHandlingMiddleware(
                 ue.Message,
                 (object)new { }),
 
+            // The AI provider failed (outage, rate limit, bad key). Don't leak its message to users.
+            HttpRequestException => (
+                HttpStatusCode.ServiceUnavailable,
+                "The CV check is busy right now. Please try again in a few minutes.",
+                (object)new { }),
+
             _ => (
                 HttpStatusCode.InternalServerError,
                 "An unexpected error occurred.",

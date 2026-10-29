@@ -1,5 +1,59 @@
 @import "tailwindcss";
 
+/* ── Ink & teal theme ──────────────────────────────────────────────────────────
+   The pages were built with Tailwind's indigo/violet/slate classes. Remapping those
+   palettes here restyles every page at once: teal accent, ink text, warm paper
+   background, without touching hundreds of class names. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Newsreader", ui-serif, Georgia, serif;
+
+  --color-indigo-50: #f0fdfa;
+  --color-indigo-100: #ccfbf1;
+  --color-indigo-200: #99f6e4;
+  --color-indigo-300: #5eead4;
+  --color-indigo-400: #14b8a6;
+  --color-indigo-500: #0d9488;
+  --color-indigo-600: #0f766e;
+  --color-indigo-700: #115e59;
+  --color-indigo-800: #134e4a;
+  --color-indigo-900: #042f2e;
+
+  --color-violet-50: #f0fdfa;
+  --color-violet-100: #ccfbf1;
+  --color-violet-200: #99f6e4;
+  --color-violet-400: #14b8a6;
+  --color-violet-500: #0d9488;
+  --color-violet-600: #0f766e;
+  --color-violet-700: #115e59;
+
+  --color-slate-50: #f7f5f0;
+  --color-slate-100: #efebe3;
+  --color-slate-200: #e4dfd4;
+  --color-slate-900: #13233a;
+  --color-gray-50: #f7f5f0;
+  --color-gray-100: #efebe3;
+  --color-gray-200: #e4dfd4;
+  --color-gray-900: #13233a;
+}
+
+@layer base {
+  body {
+    background: #f7f5f0;
+    color: #13233a;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Calmer motion: no floating badges or drifting colour blobs. */
+.animate-blob { display: none; }
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(28px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -41,7 +95,7 @@
 }
 
 .animate-float {
-  animation: float 3.5s ease-in-out infinite;
+  animation: none;
 }
 
 .animate-blob {
@@ -90,3 +144,68 @@
 .animation-delay-1000 { animation-delay: 1000ms; }
 .animation-delay-2000 { animation-delay: 2000ms; }
 .animation-delay-4000 { animation-delay: 4000ms; }
+
+.font-display { font-family: var(--font-display); }
+
+/* Rotating headline word: rolls up from below and snaps into place with a small overshoot. */
+@keyframes snapIn {
+  0%   { transform: translateY(105%); opacity: 0; filter: blur(2px); }
+  55%  { transform: translateY(-8%);  opacity: 1; filter: blur(0); }
+  75%  { transform: translateY(3%); }
+  100% { transform: translateY(0); }
+}
+.animate-snap-in { animation: snapIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-snap-in { animation: none; }
+}
+
+/* Landing CV preview: checklist items tick in one after another, one line gets highlighted. */
+@keyframes tick {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-tick { animation: tick 0.35s ease-out both; }
+
+@keyframes highlight {
+  0%, 30%  { background-color: #efebe3; }
+  60%, 100% { background-color: #ccfbf1; }
+}
+.animate-highlight { animation: highlight 2.4s ease-in-out 1.5s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-tick, .animate-highlight { animation: none; }
+}
+
+/* Landing example: the rewritten bullet fades into its teal highlight after the page settles. */
+@keyframes highlightText {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-highlight-text { animation: highlightText 0.5s ease-out 0.9s both; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-highlight-text { animation: none; }
+}
+
+/* Logo: the handshake shakes (three quick up-downs) and "Mate" nods, on load and on hover. */
+@keyframes handshake {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  15%  { transform: translateY(-3px) rotate(-8deg); }
+  30%  { transform: translateY(2px) rotate(6deg); }
+  45%  { transform: translateY(-3px) rotate(-8deg); }
+  60%  { transform: translateY(2px) rotate(6deg); }
+  75%  { transform: translateY(-1px) rotate(-3deg); }
+}
+@keyframes nod {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-2px) rotate(-2deg); }
+  60% { transform: translateY(1px); }
+}
+.logo-shake { transform-origin: 50% 60%; animation: handshake 1.8s ease-in-out 0.5s both; }
+.logo-nod { animation: nod 1.8s ease-in-out 0.5s both; }
+.logo:hover .logo-shake { animation: handshake 1.8s ease-in-out both; }
+.logo:hover .logo-nod { animation: nod 1.8s ease-in-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .logo-shake, .logo-nod, .logo:hover .logo-shake, .logo:hover .logo-nod { animation: none; }
+}
+

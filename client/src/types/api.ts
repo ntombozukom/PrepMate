@@ -141,6 +141,8 @@ export interface CvMatchResultDto {
 export interface CoverLetterDto {
   coverLetter: string;
   tone: string;
+  /** No-account check only: figures in the letter that aren't in the CV or job ad. */
+  unverifiedFigures?: string[];
 }
 
 export interface AtsOptimizationDto {
@@ -150,4 +152,37 @@ export interface AtsOptimizationDto {
   rewrittenSummary: string;
   keywordsToAdd: string[];
   rewrittenCv: string;
+  /** True when the CV was longer than the AI limit and only the first part was rewritten. */
+  cvWasTruncated: boolean;
+}
+
+/** Quick ATS score from the no-account check. `pass` lets the same visitor ask for the rewrite and cover letter. */
+export interface AtsScoreDto {
+  score: number;
+  strengths: string[];
+  /** What to fix; `quote` is the exact line from the CV the point is about, when there is one. */
+  issues: { text: string; quote?: string }[];
+  cvWasTruncated: boolean;
+  pass: string;
+}
+
+export interface AtsRewriteDto {
+  rewrittenCv: string;
+  changes: string[];
+  keywordsAdded: string[];
+  /** Figures in the rewrite that aren't in the original CV, for the visitor to check or remove. */
+  unverifiedFigures: string[];
+  cvWasTruncated: boolean;
+}
+
+export interface FeaturesDto {
+  /** Interview prep (sessions, concepts, match analysis). Off = shown as coming soon. */
+  jobPrep: boolean;
+  /** Sign-up, sign-in and saved CVs. Off = the no-account check at /check only. */
+  accounts: boolean;
+}
+
+export interface WaitlistStatusDto {
+  joined: boolean;
+  joinedAt: string | null;
 }

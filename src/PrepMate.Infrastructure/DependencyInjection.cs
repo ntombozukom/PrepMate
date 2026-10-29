@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.Configure<GroqOptions>(configuration.GetSection(GroqOptions.SectionName));
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<GoogleOptions>(configuration.GetSection(GoogleOptions.SectionName));
+        services.Configure<FeatureOptions>(configuration.GetSection(FeatureOptions.SectionName));
 
         // Database
         services.AddDbContext<AppDbContext>(opts =>
@@ -38,6 +39,7 @@ public static class DependencyInjection
         // Services
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPdfExtractorService, PdfExtractorService>();
+        services.AddScoped<IDocxExtractorService, DocxExtractorService>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
         var aiProvider = configuration["AiProvider"] ?? "Claude";

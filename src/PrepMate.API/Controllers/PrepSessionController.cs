@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PrepMate.API.Extensions;
+using PrepMate.API.Filters;
 using PrepMate.Application.DTOs;
 using PrepMate.Application.Features.PrepSession.Commands.Create;
 using PrepMate.Application.Features.PrepSession.Queries.GetAll;
@@ -15,6 +16,7 @@ public sealed record AnalyzeJdRequest(string JobDescriptionText);
 [ApiController]
 [Route("api/v1/prep-sessions")]
 [Authorize]
+[RequiresJobPrep]
 public sealed class PrepSessionController(
     IMediator mediator,
     IPdfExtractorService pdfExtractor,

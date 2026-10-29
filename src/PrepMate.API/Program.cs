@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PrepMate.API;
 using PrepMate.API.Middleware;
 using PrepMate.Application;
 using PrepMate.Infrastructure;
@@ -11,6 +12,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
+builder.Services.AddAiRateLimit(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opts =>
 {
@@ -57,6 +59,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

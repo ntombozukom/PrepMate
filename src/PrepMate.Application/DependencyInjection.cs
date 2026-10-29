@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using PrepMate.Application.Common.Behaviors;
+using PrepMate.Application.Features.Cv;
 
 namespace PrepMate.Application;
 
@@ -19,6 +20,7 @@ public static class DependencyInjection
         });
 
         services.AddValidatorsFromAssembly(assembly);
+        services.AddScoped<CvTextReader>();
 
         return services;
     }

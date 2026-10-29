@@ -101,7 +101,7 @@ export default function NewSessionPage() {
   const charOk = charCount >= 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/40 px-4 py-8">
+    <div className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="mx-auto max-w-2xl">
 
         <button

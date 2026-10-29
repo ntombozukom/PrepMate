@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using PrepMate.API.Filters;
 using PrepMate.Application.DTOs;
 using PrepMate.Application.Features.Auth.Commands.GoogleLogin;
 using PrepMate.Application.Features.Auth.Commands.Login;
@@ -9,6 +10,7 @@ namespace PrepMate.API.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[RequiresAccounts]
 public sealed class AuthController(IMediator mediator) : ControllerBase
 {
     /// <summary>Register a new user account.</summary>
