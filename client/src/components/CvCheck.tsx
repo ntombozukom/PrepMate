@@ -25,12 +25,12 @@ export function CvUploadBox({ check, turnstileRef }: { check: Check; turnstileRe
   const choose = () => inputRef.current?.click();
 
   return (
-    <div className="w-full max-w-md mx-auto lg:mx-0">
+    <div className="w-full max-w-md mx-auto lg:mx-0 text-center lg:text-left">
       <div
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files?.[0]; if (f && !busy) void check.pick(f); }}
-        className={`rounded-2xl border-2 border-dashed bg-white p-4 transition-colors ${
+        className={`inline-block max-w-full text-left rounded-2xl border-2 border-dashed bg-white px-3 py-2.5 transition-colors ${
           dragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300'
         }`}
       >
@@ -49,10 +49,13 @@ export function CvUploadBox({ check, turnstileRef }: { check: Check; turnstileRe
             <button onClick={choose} className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Check another</button>
           </div>
         ) : (
-          <button onClick={choose}
-            className="group w-full flex items-center justify-center gap-2 rounded-full bg-indigo-600 px-7 py-3.5 text-base font-semibold text-white hover:bg-indigo-700 transition-colors">
-            <Upload className="h-4 w-4" /> Choose your CV
-          </button>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <button onClick={choose}
+              className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-[13px] font-semibold text-white hover:bg-indigo-700 transition-colors">
+              <Upload className="h-3.5 w-3.5" /> Choose your CV
+            </button>
+            <span className="text-[13px] text-slate-500">or drop it here</span>
+          </div>
         )}
 
         {/* Turnstile shows a tick box here only if Cloudflare asks for one. */}
@@ -95,7 +98,7 @@ function Results({ cvText, fileName, score }: { cvText: string; fileName: string
 
 const card = 'rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 text-left';
 const primaryBtn =
-  'inline-flex items-center justify-center gap-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors';
+  'inline-flex items-center justify-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-[13px] font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors';
 
 function ScoreCard({ score }: { score: AtsScoreDto }) {
   const tone = score.score >= 70 ? 'bg-emerald-500' : score.score >= 50 ? 'bg-amber-400' : 'bg-red-400';
@@ -356,7 +359,7 @@ function CoverLetterStep({ cvText, pass }: { cvText: string; pass: string }) {
           <p className="mt-1 text-sm text-slate-600">Written from your CV. Add the job for a better match.</p>
         </div>
         <button onClick={() => setOpen(true)}
-          className="shrink-0 rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+          className="shrink-0 rounded-full border border-slate-300 px-4 py-2 text-[13px] font-semibold text-slate-800 hover:bg-slate-50">
           Write one
         </button>
       </section>
